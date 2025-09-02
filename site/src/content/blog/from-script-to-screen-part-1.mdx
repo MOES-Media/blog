@@ -1,18 +1,21 @@
 ---
-title: 'From Script to Screen: Building a Movie Collection Plugin in Strapi – Part 1: Setting up Strapi'
-description: 'Starting our journey to build a custom movie collection plugin for Strapi. In Part 1, we set up our development environment and initialize a new Strapi project.'
-pubDate: 'Sep 02 2025'
-heroImage: '../../assets/blog-placeholder-3.jpg'
-tags: ['strapi', 'plugin-development', 'from-script-to-screen', 'typescript', 'cms']
-series: 'From Script to Screen'
+title: "From Script to Screen: Building a Movie Collection Plugin in Strapi – Part 1: Setting up Strapi"
+description: "Starting our journey to build a custom movie collection plugin for Strapi. In Part 1, we set up our development environment and initialize a new Strapi project."
+pubDate: "Sep 02 2025"
+heroImage: "../../assets/blog-placeholder-3.jpg"
+tags:
+  ["strapi", "plugin-development", "from-script-to-screen", "typescript", "cms"]
+series: "From Script to Screen"
 seriesPart: 1
 ---
 
+import CodeBlock from "../../components/CodeBlock.astro";
+
 ## Rise of the CMS
 
-Creating websites in the late '90s and early 2000s was a drag, to say the least. You had to know HTML, and even adjusting the tiniest bit of content meant diving back into code. Then came the CMS: powerful systems that allowed users to manage their own content. **WordPress**, **Drupal**, and **Joomla** quickly rose to help users publish, but for developers it often felt like we were fighting *against* the machines rather than working with them. Templates, hooks, and spaghetti PHP made extending these systems a grind. They were great for spinning up blogs and corporate sites, but as the web evolved beyond the page-by-page model—into **SPAs, mobile apps, and omni-channel delivery** (using the same content across web, mobile, smart devices, and more)—those monoliths began to crack.
+Creating websites in the late '90s and early 2000s was a drag, to say the least. You had to know HTML, and even adjusting the tiniest bit of content meant diving back into code. Then came the CMS: powerful systems that allowed users to manage their own content. **WordPress**, **Drupal**, and **Joomla** quickly rose to help users publish, but for developers it often felt like we were fighting _against_ the machines rather than working with them. Templates, hooks, and spaghetti PHP made extending these systems a grind. They were great for spinning up blogs and corporate sites, but as the web evolved beyond the page-by-page model—into **SPAs, mobile apps, and omni-channel delivery** (using the same content across web, mobile, smart devices, and more)—those monoliths began to crack.
 
-Enter a new generation of CMS: **headless**. And among them, **Strapi** isn't just another option—it's built for developers. Powered by **Node.js** and **Koa**, Strapi feels less like a CMS and more like a framework you can bend to your will. It's API-first, the middleware is transparent, plugins are modular, and you can wire up your own routes, controllers, services, and even custom admin screens. Compared to WordPress, where headless support was bolted on afterwards, Strapi didn't *adapt* to headless later on—it was **moulded by it from day one**, and it fits perfectly into the modern **TypeScript stack**.
+Enter a new generation of CMS: **headless**. And among them, **Strapi** isn't just another option—it's built for developers. Powered by **Node.js** and **Koa**, Strapi feels less like a CMS and more like a framework you can bend to your will. It's API-first, the middleware is transparent, plugins are modular, and you can wire up your own routes, controllers, services, and even custom admin screens. Compared to WordPress, where headless support was bolted on afterwards, Strapi didn't _adapt_ to headless later on—it was **moulded by it from day one**, and it fits perfectly into the modern **TypeScript stack**.
 
 In this series of articles, we'll start from scratch: setting up a project and installing Strapi before moving on to creating a custom plugin step by step. We'll define new content types, set up routes and services, and even build custom admin screens. By the end, you'll have a solid understanding of how to develop Strapi plugins—by building a fully working **movie collection plugin** from the ground up.
 
@@ -20,8 +23,8 @@ In this series of articles, we'll start from scratch: setting up a project and i
 
 Before we jump into Strapi itself, let's prepare a proper development environment. For this series, we'll use a **Dev Container** in VS Code, which makes the setup portable, reproducible, and easy to share. Here's the config we'll be working with:
 
-```json
-{
+<CodeBlock title=".devcontainer/devcontainer.json" lang="json">
+{`{
   "name": "Strapi Development Environment",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
   
@@ -37,15 +40,15 @@ Before we jump into Strapi itself, let's prepare a proper development environmen
         "ms-vscode.vscode-json",
         "formulahendry.auto-rename-tag",
         "christian-kohler.path-intellisense"
-      ],
+        ],
       "settings": {
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "biomejs.biome",
         "editor.codeActionsOnSave": {
-          "quickfix.biome": "explicit",
-          "source.organizeImports.biome": "explicit"
+        "quickfix.biome": "explicit",
+        "source.organizeImports.biome": "explicit"
         },
-        "terminal.integrated.defaultProfile.linux": "bash"
+      "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   },
@@ -55,14 +58,16 @@ Before we jump into Strapi itself, let's prepare a proper development environmen
     "1337": {
       "label": "Strapi App",
       "onAutoForward": "notify"
-    }
+  }
   },
 
   "postCreateCommand": "npm install -g pnpm && pnpm install",
 
   "remoteUser": "node"
-}
-```
+  }
+`}
+
+</CodeBlock>
 
 Sharp-eyed readers may notice we're not sticking to a "standard" TypeScript setup here—our environment includes a few different tools. Let's break down why.
 
@@ -78,7 +83,7 @@ Package managers may look the same, but they're not. Each has trade-offs, and **
 
 ### What's port 1337?
 
-By default, Strapi runs on **port 1337**. In our config, the `portsAttributes` section makes sure VS Code auto-detects and labels that port when it's forwarded from inside the container. So when Strapi boots, you'll see a notification like *"Port 1337 → Strapi App"*, making it easy to jump straight into the admin panel without digging through logs.
+By default, Strapi runs on **port 1337**. In our config, the `portsAttributes` section makes sure VS Code auto-detects and labels that port when it's forwarded from inside the container. So when Strapi boots, you'll see a notification like _"Port 1337 → Strapi App"_, making it easy to jump straight into the admin panel without digging through logs.
 
 ## Initializing Strapi
 
@@ -86,9 +91,7 @@ With our development environment ready, we can initialize Strapi. Since we aren'
 
 Because we're using **pnpm**, the initialization command is:
 
-```bash
-pnpm create strapi-app@latest
-```
+<CodeBlock lang="bash">pnpm create strapi-app@latest</CodeBlock>
 
 This kicks off an interactive CLI that guides you through the setup. For this series, we'll go with the following settings:
 
@@ -100,20 +103,20 @@ This kicks off an interactive CLI that guides you through the setup. For this se
 
 Once the generator starts doing its job, you'll see something like this:
 
-```bash
- Strapi   v5.23.1 🚀 Let's create your new project
- ...
- Strapi   Creating a new application at /workspaces/strapi-plugin-tutorial
-```
+<CodeBlock lang="bash">
+  Strapi v5.23.1 🚀 Let's create your new project ... Strapi Creating a new
+  
+  application at /workspaces/strapi-plugin-tutorial
+</CodeBlock>
 
 ### What does the generator create?
 
 Under the hood, the CLI scaffolds a complete Strapi application with a sensible structure:
 
 - **`/src`** → Your main application code lives here. This includes:
-    - **`/api`** → Content types, controllers, services, and routes.
-    - **`/extensions`** → Overrides and extensions of Strapi's core.
-    - **`/plugins`** → Any custom or installed plugins.
+  - **`/api`** → Content types, controllers, services, and routes.
+  - **`/extensions`** → Overrides and extensions of Strapi's core.
+  - **`/plugins`** → Any custom or installed plugins.
 - **`/config`** → Centralized configuration for the server, database, middleware, and plugins.
 - **`/public`** → Static assets served directly (logos, favicons, etc.).
 - **`/types`** → TypeScript typings auto-generated from your content types.
@@ -122,9 +125,7 @@ Under the hood, the CLI scaffolds a complete Strapi application with a sensible 
 
 The result is a ready-to-run Strapi app that boots on **port 1337**. You can start it immediately with:
 
-```bash
-pnpm develop
-```
+<CodeBlock lang="bash">pnpm develop</CodeBlock>
 
 That command launches Strapi in development mode, regenerates types on changes, and spins up the admin panel at http://localhost:1337/admin
 
@@ -132,15 +133,11 @@ So go ahead and run it… but you'll notice we're not quite there yet. Instead o
 
 To fix this, run:
 
-```bash
-pnpm approve-builds
-```
+<CodeBlock lang="bash">pnpm approve-builds</CodeBlock>
 
 When prompted, you can approve all packages to avoid running into similar issues later. Once that's done, rerun:
 
-```bash
-pnpm develop
-```
+<CodeBlock lang="bash">pnpm develop</CodeBlock>
 
 Now the application should boot successfully, and you'll be able to log in to the Strapi admin dashboard.
 
@@ -150,14 +147,12 @@ With Strapi up and running, the next step is to get our codebase under control w
 
 We begin by installing biomeJS as a devdependency with
 
-```bash
-pnpm add -D @biomejs/biome
-```
+<CodeBlock lang="bash">pnpm add -D @biomejs/biome</CodeBlock>
 
 Biome needs config file, add a biome.json file in the root of the project, the one we'll be using with Strapi looks like this
 
-```json
-{
+<CodeBlock lang="json" title="biome.json">
+  {`{
   "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
   "formatter": {
     "enabled": true,
@@ -228,8 +223,8 @@ Biome needs config file, add a biome.json file in the root of the project, the o
     }
   }
 }
-
-```
+`}
+</CodeBlock>
 
 This config enables:
 
@@ -239,24 +234,24 @@ This config enables:
 
 Since Biome respects `.gitignore`, it's a good idea to make sure the **pnpm store** is ignored there as well to avoid noise in your repo, add this to your .gitignore file
 
-```bash
-.pnpm-store
-```
+<CodeBlock lang="bash">.pnpm-store</CodeBlock>
 
 Finally, let's add some scripts to `package.json` for convenience:
 
-```json
-{
-  "scripts": {
-    "lint": "biome lint .",
-    "lint:fix": "biome lint --write .",
-    "format": "biome format .",
-    "format:fix": "biome format --write .",
-    "check": "biome check .",
-    "check:fix": "biome check --write ."
+<CodeBlock lang="json" title="package.json">
+  {`
+  {
+    "scripts": {
+      "lint": "biome lint .",
+      "lint:fix": "biome lint --write .",
+      "format": "biome format .",
+      "format:fix": "biome format --write .",
+      "check": "biome check .",
+      "check:fix": "biome check --write ."
+    }
   }
-}
-```
+`}
+</CodeBlock>
 
 - `lint` → Run Biome's linter.
 - `lint:fix` → Auto-fix lint issues where possible.
@@ -267,22 +262,23 @@ Finally, let's add some scripts to `package.json` for convenience:
 
 Let's give our setup a quick test by running:
 
-```bash
-pnpm check:fix
-```
+<CodeBlock lang="bash">pnpm check:fix</CodeBlock>
 
 Biome will lint and format the codebase according to our rules. In this case, it flags one issue in `config/database.ts`:
 
-```bash
- ℹ Using the node: protocol is more explicit and signals that the imported module belongs to Node.js.
+<CodeBlock lang="bash">
+{` 
+ℹ Using the node: protocol is more explicit and signals that the imported module belongs to Node.js.
 
- ℹ Unsafe fix: Add the node: protocol.
+ℹ Unsafe fix: Add the node: protocol.
 
-   1 │ - import path from "path";
-     │ + import path from "node:path";
-   2 │
-   3 │ export default ({ env }) => {
-```
+1 │ - import path from "path";
+  │ + import path from "node:path";
+2 │
+3 │ export default ({ env }) => {
+`}
+
+</CodeBlock>
 
 The fix is simple: open `config/database.ts` and update the import from `"path"` to `"node:path"`. Once that's done, rerun the check and you should see a clean slate.
 
