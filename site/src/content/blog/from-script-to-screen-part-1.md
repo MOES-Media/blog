@@ -1,0 +1,291 @@
+---
+title: 'From Script to Screen: Building a Movie Collection Plugin in Strapi – Part 1: Setting up Strapi'
+description: 'Starting our journey to build a custom movie collection plugin for Strapi. In Part 1, we set up our development environment and initialize a new Strapi project.'
+pubDate: 'Sep 02 2025'
+heroImage: '../../assets/blog-placeholder-3.jpg'
+tags: ['strapi', 'plugin-development', 'from-script-to-screen', 'typescript', 'cms']
+series: 'From Script to Screen'
+seriesPart: 1
+---
+
+## Rise of the CMS
+
+Creating websites in the late '90s and early 2000s was a drag, to say the least. You had to know HTML, and even adjusting the tiniest bit of content meant diving back into code. Then came the CMS: powerful systems that allowed users to manage their own content. **WordPress**, **Drupal**, and **Joomla** quickly rose to help users publish, but for developers it often felt like we were fighting *against* the machines rather than working with them. Templates, hooks, and spaghetti PHP made extending these systems a grind. They were great for spinning up blogs and corporate sites, but as the web evolved beyond the page-by-page model—into **SPAs, mobile apps, and omni-channel delivery** (using the same content across web, mobile, smart devices, and more)—those monoliths began to crack.
+
+Enter a new generation of CMS: **headless**. And among them, **Strapi** isn't just another option—it's built for developers. Powered by **Node.js** and **Koa**, Strapi feels less like a CMS and more like a framework you can bend to your will. It's API-first, the middleware is transparent, plugins are modular, and you can wire up your own routes, controllers, services, and even custom admin screens. Compared to WordPress, where headless support was bolted on afterwards, Strapi didn't *adapt* to headless later on—it was **moulded by it from day one**, and it fits perfectly into the modern **TypeScript stack**.
+
+In this series of articles, we'll start from scratch: setting up a project and installing Strapi before moving on to creating a custom plugin step by step. We'll define new content types, set up routes and services, and even build custom admin screens. By the end, you'll have a solid understanding of how to develop Strapi plugins—by building a fully working **movie collection plugin** from the ground up.
+
+## Setting up our Development environment
+
+Before we jump into Strapi itself, let's prepare a proper development environment. For this series, we'll use a **Dev Container** in VS Code, which makes the setup portable, reproducible, and easy to share. Here's the config we'll be working with:
+
+```json
+{
+  "name": "Strapi Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "biomejs.biome",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "christian-kohler.path-intellisense"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "editor.codeActionsOnSave": {
+          "quickfix.biome": "explicit",
+          "source.organizeImports.biome": "explicit"
+        },
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  "forwardPorts": [1337],
+  "portsAttributes": {
+    "1337": {
+      "label": "Strapi App",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "postCreateCommand": "npm install -g pnpm && pnpm install",
+
+  "remoteUser": "node"
+}
+```
+
+Sharp-eyed readers may notice we're not sticking to a "standard" TypeScript setup here—our environment includes a few different tools. Let's break down why.
+
+### **Why Biome instead of ESLint & Prettier?**
+
+Most TypeScript/JavaScript projects use **ESLint** and **Prettier** for linting and formatting. It works… most of the time. But anyone who's wrestled with that combo knows the pain: conflicting rules, overlapping responsibilities, and maintaining two configs for two separate tools.
+
+**Biome** simplifies all of that. It's a single, blazing-fast tool (written in Rust) that handles **linting, formatting, and import sorting** out of the box. No plugin soup, no config sprawl—just one config file. In this setup, Biome is the default formatter and runs automatically on save, keeping our codebase clean without extra overhead.
+
+### Why pnpm instead of npm or Yarn?
+
+Package managers may look the same, but they're not. Each has trade-offs, and **pnpm** has one killer feature: a **content-addressable store**. Instead of duplicating dependencies across projects, pnpm keeps them in a central location and symlinks them into your project. The result: faster installs, less disk usage, and fewer bloated `node_modules` folders—especially handy if you're working in a monorepo.
+
+### What's port 1337?
+
+By default, Strapi runs on **port 1337**. In our config, the `portsAttributes` section makes sure VS Code auto-detects and labels that port when it's forwarded from inside the container. So when Strapi boots, you'll see a notification like *"Port 1337 → Strapi App"*, making it easy to jump straight into the admin panel without digging through logs.
+
+## Initializing Strapi
+
+With our development environment ready, we can initialize Strapi. Since we aren't spinning up an external database, we'll use Strapi's default **SQLite database**, which is lightweight and perfect for plugin development.
+
+Because we're using **pnpm**, the initialization command is:
+
+```bash
+pnpm create strapi-app@latest
+```
+
+This kicks off an interactive CLI that guides you through the setup. For this series, we'll go with the following settings:
+
+- **Database** → SQLite (lightweight and perfect during development)
+- **Example data** → No (we'll start fresh and build our own content-types)
+- **TypeScript** → Yes (no brainer)
+- **Git repo** → Yes (so we start with a clean history)
+- **A/B testing** → No (keeping it simple)
+
+Once the generator starts doing its job, you'll see something like this:
+
+```bash
+ Strapi   v5.23.1 🚀 Let's create your new project
+ ...
+ Strapi   Creating a new application at /workspaces/strapi-plugin-tutorial
+```
+
+### What does the generator create?
+
+Under the hood, the CLI scaffolds a complete Strapi application with a sensible structure:
+
+- **`/src`** → Your main application code lives here. This includes:
+    - **`/api`** → Content types, controllers, services, and routes.
+    - **`/extensions`** → Overrides and extensions of Strapi's core.
+    - **`/plugins`** → Any custom or installed plugins.
+- **`/config`** → Centralized configuration for the server, database, middleware, and plugins.
+- **`/public`** → Static assets served directly (logos, favicons, etc.).
+- **`/types`** → TypeScript typings auto-generated from your content types.
+- **`package.json`** → Preconfigured with Strapi dependencies, ready to run with pnpm.
+- **`.strapi`** → Internal cache folder for build artifacts and admin UI assets.
+
+The result is a ready-to-run Strapi app that boots on **port 1337**. You can start it immediately with:
+
+```bash
+pnpm develop
+```
+
+That command launches Strapi in development mode, regenerates types on changes, and spins up the admin panel at http://localhost:1337/admin
+
+So go ahead and run it… but you'll notice we're not quite there yet. Instead of Strapi starting, you'll likely hit a **SQLite error** complaining that no bindings could be found. This happens because of another feature of **pnpm**: by default, it blocks post-install scripts for security reasons.
+
+To fix this, run:
+
+```bash
+pnpm approve-builds
+```
+
+When prompted, you can approve all packages to avoid running into similar issues later. Once that's done, rerun:
+
+```bash
+pnpm develop
+```
+
+Now the application should boot successfully, and you'll be able to log in to the Strapi admin dashboard.
+
+## Setting up BiomeJS
+
+With Strapi up and running, the next step is to get our codebase under control with Biome. As mentioned earlier this combines both linting and formatting in one blazing fast, rust powered tool and saves us from juggling multiple plugins and configuration files.
+
+We begin by installing biomeJS as a devdependency with
+
+```bash
+pnpm add -D @biomejs/biome
+```
+
+Biome needs config file, add a biome.json file in the root of the project, the one we'll be using with Strapi looks like this
+
+```json
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": { "recommended": true },
+      "complexity": {
+        "recommended": true,
+        "noExcessiveCognitiveComplexity": "error",
+        "noVoid": "error",
+        "noBannedTypes": "warn"
+      },
+      "correctness": {
+        "recommended": true,
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "warn"
+      },
+      "performance": { "recommended": true },
+      "security": { "recommended": true },
+      "style": {
+        "recommended": true,
+        "noImplicitBoolean": "error",
+        "noNegationElse": "error",
+        "useConsistentArrayType": "error",
+        "useImportType": "error",
+        "useNodejsImportProtocol": "error",
+        "useShorthandAssign": "error"
+      },
+      "suspicious": {
+        "recommended": true,
+        "noConsole": "warn",
+        "noDebugger": "error",
+        "noEmptyBlockStatements": "warn"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double",
+      "semicolons": "always",
+      "trailingCommas": "es5",
+      "bracketSameLine": false,
+      "bracketSpacing": true,
+      "arrowParentheses": "always"
+    }
+  },
+  "json": {
+    "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 }
+  },
+  "css": {
+    "formatter": {
+      "enabled": true,
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "lineWidth": 100
+    }
+  }
+}
+
+```
+
+This config enables:
+
+- Consistent **formatting** across JavaScript, JSON, and CSS.
+- A solid set of **linting rules** for correctness, performance, and security.
+- Integration with Git (respecting `.gitignore`).
+
+Since Biome respects `.gitignore`, it's a good idea to make sure the **pnpm store** is ignored there as well to avoid noise in your repo, add this to your .gitignore file
+
+```bash
+.pnpm-store
+```
+
+Finally, let's add some scripts to `package.json` for convenience:
+
+```json
+{
+  "scripts": {
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  }
+}
+```
+
+- `lint` → Run Biome's linter.
+- `lint:fix` → Auto-fix lint issues where possible.
+- `format` → Show formatting differences.
+- `format:fix` → Apply formatting automatically.
+- `check` → Run both lint + format checks in one go.
+- `check:fix` → Apply fixes for both.
+
+Let's give our setup a quick test by running:
+
+```bash
+pnpm check:fix
+```
+
+Biome will lint and format the codebase according to our rules. In this case, it flags one issue in `config/database.ts`:
+
+```bash
+ ℹ Using the node: protocol is more explicit and signals that the imported module belongs to Node.js.
+
+ ℹ Unsafe fix: Add the node: protocol.
+
+   1 │ - import path from "path";
+     │ + import path from "node:path";
+   2 │
+   3 │ export default ({ env }) => {
+```
+
+The fix is simple: open `config/database.ts` and update the import from `"path"` to `"node:path"`. Once that's done, rerun the check and you should see a clean slate.
+
+With that, our Strapi project is fully set up, formatted, and ready to go — a solid foundation for building our custom plugin in the next part of this series.
+
+In the next article, we'll dive straight into the deep end — building a **Strapi 5 plugin from scratch**. We'll cover everything from scaffolding the plugin to wiring up content types, routes, and services, setting the stage for our movie collection project.

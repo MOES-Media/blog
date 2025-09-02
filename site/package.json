@@ -1,0 +1,24 @@
+{
+  "name": "@moes-media/blog",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.3.4",
+    "@astrojs/rss": "^4.0.12",
+    "@astrojs/sitemap": "^3.5.1",
+    "astro": "^5.13.5",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.29.6"
+  }
+}
