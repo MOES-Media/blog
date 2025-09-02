@@ -1,0 +1,85 @@
+---
+import { readFileSync } from "fs";
+import { marked } from "marked";
+import { join } from "path";
+import heroImage from '../assets/blog-placeholder-2.jpg';
+import Layout from "../layouts/BlogPost.astro";
+
+let changelogContent = "";
+try {
+  const changelogPath = join(process.cwd(), "CHANGELOG.md");
+  const rawContent = readFileSync(changelogPath, "utf-8");
+  const cleanContent = rawContent.replace(/^# @moes-media\/blog\s*\n/, "");
+  changelogContent = await marked(cleanContent);
+} catch (error) {
+  changelogContent = await marked("# Changelog\n\nNo changelog available yet.");
+}
+---
+
+<Layout
+  title="Changelog - MOES-Media Dev Blog"
+  description="Version history and changelog for the MOES-Media Dev Blog"
+  pubDate={new Date()}
+>
+  <main>
+    <article>
+      <div class="hero-image">
+        <img
+          width={1020}
+          height={510}
+          src={heroImage.src}
+          alt="Changelog"
+        />
+      </div>
+      <div class="prose">
+        <div class="title">
+          <h1>Changelog</h1>
+          <p>Track all changes, updates, and new content added to this blog.</p>
+        </div>
+        <div class="changelog-content" set:html={changelogContent} />
+      </div>
+    </article>
+  </main>
+</Layout>
+
+<style>
+  main {
+    width: calc(100% - 2rem);
+    max-width: 100%;
+    margin: 0;
+  }
+  .hero-image {
+    width: 100%;
+  }
+  .hero-image img {
+    display: block;
+    margin: 0 auto;
+    border-radius: 12px;
+    box-shadow: var(--box-shadow);
+  }
+  .prose {
+    width: 720px;
+    max-width: calc(100% - 2em);
+    margin: auto;
+    padding: 1em;
+    color: rgb(var(--gray-dark));
+  }
+  .title {
+    margin-bottom: 1em;
+    padding: 1em 0;
+    text-align: center;
+    line-height: 1;
+  }
+  .title h1 {
+    margin: 0 0 0.5em 0;
+  }
+  .changelog-content {
+    line-height: 1.6;
+  }
+  .changelog-content h2 {
+    margin-top: 2em;
+    margin-bottom: 1em;
+    border-bottom: 1px solid rgb(var(--gray-light));
+    padding-bottom: 0.5em;
+  }
+</style>
