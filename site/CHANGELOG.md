@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.1.3
+
+### Patch Changes
+
+- 0f957a9: fixing base urls
+
 ## 0.1.2
 
 ### Patch Changes
