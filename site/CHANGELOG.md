@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.3.1
+
+### Patch Changes
+
+- 6d87127: Redirects site title to blog
+
 ## 0.3.0
 
 ### Minor Changes
