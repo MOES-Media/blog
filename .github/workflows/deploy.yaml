@@ -46,6 +46,7 @@ jobs:
           version: cd site && pnpm version
           commit: "chore: version packages"
           title: "chore: version packages"
+          cwd: ./site
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
