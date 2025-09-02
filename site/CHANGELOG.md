@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.1.5
+
+### Patch Changes
+
+- 72ccef5: fix versioning
+
 ## 0.1.4
 
 ### Patch Changes
