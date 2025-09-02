@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.2.1
+
+### Patch Changes
+
+- ceefaa0: fixed missing file names on code snippets
+
 ## 0.2.0
 
 ### Minor Changes
