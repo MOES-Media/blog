@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.1.2
+
+### Patch Changes
+
+- e0e9878: fixed basepath config
+
 ## 0.1.1
 
 ### Patch Changes
