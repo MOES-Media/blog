@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./site
+        shell: bash
+        working-directory: ./scripts
     outputs:
       published: ${{ steps.changesets.outputs.published }}
     steps:
