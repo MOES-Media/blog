@@ -19,7 +19,7 @@ jobs:
         shell: bash
         working-directory: ./site
     outputs:
-      published: ${{ steps.changesets.outputs.published }}
+      published: ${{ steps.manual-version.outputs.published }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,15 +39,26 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: pnpm version
-          commit: "chore: version packages"
-          cwd: ./site
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check for changesets
+        id: check-changesets
+        run: |
+          if [ -d ".changeset" ] && [ "$(ls -A .changeset)" ]; then
+            echo "has-changesets=true" >> $GITHUB_OUTPUT
+          else
+            echo "has-changesets=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Version packages
+        if: steps.check-changesets.outputs.has-changesets == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          pnpm changeset version
+          git add .
+          git commit -m "chore: version packages" || exit 0
+          git push
+          echo "published=true" >> $GITHUB_OUTPUT
+        id: manual-version
 
   build:
     needs: version
