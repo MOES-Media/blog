@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.1.1
+
+### Patch Changes
+
+- bba5edb: fixed basepath
+
 ## 0.1.0
 
 ### Minor Changes
