@@ -29,7 +29,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -51,13 +51,20 @@ jobs:
       - name: Version packages
         if: steps.check-changesets.outputs.has-changesets == 'true'
         run: |
+          echo "Before version bump:"
+          cat package.json | grep version
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           pnpm changeset version
+          echo "After version bump:"
+          cat package.json | grep version
           git add .
           git commit -m "chore: version packages" || exit 0
           git push
+          echo "Pushed commit:"
+          git log --oneline -1
           echo "published=true" >> $GITHUB_OUTPUT
+          echo "new-version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
         id: manual-version
 
   build:
@@ -67,12 +74,27 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      
+      - name: Pull latest changes
+        run: git pull origin main
+      
+      - name: Debug - Check version before build
+        run: |
+          echo "Current commit:"
+          git log --oneline -1
+          echo "Package.json version:"
+          cd site
+          cat package.json | grep version
+          node -p "require('./package.json').version"
       
       - name: Install, build, and upload your site
         uses: withastro/action@v2
         with:
           path: ./site
-          node-version: 20
+          node-version: 22
           package-manager: pnpm@latest
 
   deploy:
