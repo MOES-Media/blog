@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.2.2
+
+### Patch Changes
+
+- f8b0176: Added code for from script to screen part 1 and backlink to it
+
 ## 0.2.1
 
 ### Patch Changes
