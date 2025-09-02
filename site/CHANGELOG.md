@@ -1,5 +1,15 @@
 # @moes-media/blog
 
+## 0.3.0
+
+### Minor Changes
+
+- 2b33534: Removes the homepage and redirects to /blog as default
+
+### Patch Changes
+
+- 5783684: Fixes formatting issues
+
 ## 0.2.2
 
 ### Patch Changes
