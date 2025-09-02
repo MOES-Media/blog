@@ -25,45 +25,45 @@ Before we jump into Strapi itself, let's prepare a proper development environmen
 
 <CodeBlock title=".devcontainer/devcontainer.json" lang="json">
 {`{
-  "name": "Strapi Development Environment",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
-  
-  "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
-  },
+    "name": "Strapi Development Environment",
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bullseye",
+    
+    "features": {
+      "ghcr.io/devcontainers/features/git:1": {}
+    },
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-vscode.vscode-typescript-next",
-        "biomejs.biome",
-        "ms-vscode.vscode-json",
-        "formulahendry.auto-rename-tag",
-        "christian-kohler.path-intellisense"
-        ],
-      "settings": {
-        "editor.formatOnSave": true,
-        "editor.defaultFormatter": "biomejs.biome",
-        "editor.codeActionsOnSave": {
-        "quickfix.biome": "explicit",
-        "source.organizeImports.biome": "explicit"
-        },
-      "terminal.integrated.defaultProfile.linux": "bash"
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "ms-vscode.vscode-typescript-next",
+          "biomejs.biome",
+          "ms-vscode.vscode-json",
+          "formulahendry.auto-rename-tag",
+          "christian-kohler.path-intellisense"
+          ],
+        "settings": {
+          "editor.formatOnSave": true,
+          "editor.defaultFormatter": "biomejs.biome",
+          "editor.codeActionsOnSave": {
+          "quickfix.biome": "explicit",
+          "source.organizeImports.biome": "explicit"
+          },
+        "terminal.integrated.defaultProfile.linux": "bash"
+        }
       }
+    },
+
+    "forwardPorts": [1337],
+    "portsAttributes": {
+      "1337": {
+        "label": "Strapi App",
+        "onAutoForward": "notify"
     }
-  },
+    },
 
-  "forwardPorts": [1337],
-  "portsAttributes": {
-    "1337": {
-      "label": "Strapi App",
-      "onAutoForward": "notify"
-  }
-  },
+    "postCreateCommand": "npm install -g pnpm && pnpm install",
 
-  "postCreateCommand": "npm install -g pnpm && pnpm install",
-
-  "remoteUser": "node"
+    "remoteUser": "node"
   }
 `}
 
@@ -104,9 +104,11 @@ This kicks off an interactive CLI that guides you through the setup. For this se
 Once the generator starts doing its job, you'll see something like this:
 
 <CodeBlock lang="bash">
-  Strapi v5.23.1 🚀 Let's create your new project ... Strapi Creating a new
-
-  application at /workspaces/strapi-plugin-tutorial
+{`  
+  Strapi v5.23.1 🚀 Let's create your new project ... 
+  
+  Strapi Creating a new application at /workspaces/strapi-plugin-tutorial
+`}
 </CodeBlock>
 
 ### What does the generator create?
@@ -152,77 +154,87 @@ We begin by installing biomeJS as a devdependency with
 Biome needs config file, add a biome.json file in the root of the project, the one we'll be using with Strapi looks like this
 
 <CodeBlock lang="json" title="biome.json">
-  {`{
-  "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
-  "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100,
-    "lineEnding": "lf"
-  },
-  "vcs": {
-    "enabled": true,
-    "clientKind": "git",
-    "useIgnoreFile": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "a11y": { "recommended": true },
-      "complexity": {
-        "recommended": true,
-        "noExcessiveCognitiveComplexity": "error",
-        "noVoid": "error",
-        "noBannedTypes": "warn"
-      },
-      "correctness": {
-        "recommended": true,
-        "noUnusedVariables": "error",
-        "useExhaustiveDependencies": "warn"
-      },
-      "performance": { "recommended": true },
-      "security": { "recommended": true },
-      "style": {
-        "recommended": true,
-        "noImplicitBoolean": "error",
-        "noNegationElse": "error",
-        "useConsistentArrayType": "error",
-        "useImportType": "error",
-        "useNodejsImportProtocol": "error",
-        "useShorthandAssign": "error"
-      },
-      "suspicious": {
-        "recommended": true,
-        "noConsole": "warn",
-        "noDebugger": "error",
-        "noEmptyBlockStatements": "warn"
-      }
-    }
-  },
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "double",
-      "semicolons": "always",
-      "trailingCommas": "es5",
-      "bracketSameLine": false,
-      "bracketSpacing": true,
-      "arrowParentheses": "always"
-    }
-  },
-  "json": {
-    "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 }
-  },
-  "css": {
+{`{
+    "$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
     "formatter": {
       "enabled": true,
       "indentStyle": "space",
       "indentWidth": 2,
-      "lineWidth": 100
-    }
+      "lineWidth": 100,
+      "lineEnding": "lf"
+    },
+    "vcs": {
+      "enabled": true,
+      "clientKind": "git",
+      "useIgnoreFile": true
+    },
+    "linter": {
+      "enabled": true,
+      "rules": {
+        "recommended": true,
+        "a11y": {
+          "recommended": true
+        },
+        "complexity": {
+          "recommended": true,
+          "noExcessiveCognitiveComplexity": "error",
+          "noVoid": "error",
+          "noBannedTypes": "warn"
+        },
+        "correctness": {
+          "recommended": true,
+          "noUnusedVariables": "error",
+          "useExhaustiveDependencies": "warn"
+        },
+        "performance": {
+          "recommended": true
+        },
+        "security": {
+          "recommended": true
+        },
+        "style": {
+          "recommended": true,
+          "noImplicitBoolean": "error",
+          "noNegationElse": "error",
+          "useConsistentArrayType": "error",
+          "useImportType": "error",
+          "useNodejsImportProtocol": "error",
+          "useShorthandAssign": "error"
+        },
+        "suspicious": {
+          "recommended": true,
+          "noConsole": "warn",
+          "noDebugger": "error",
+          "noEmptyBlockStatements": "warn"
+        }
+      }
+    },
+    "javascript": {
+      "formatter": {
+        "quoteStyle": "double",
+        "semicolons": "always",
+        "trailingCommas": "es5",
+        "bracketSameLine": false,
+        "bracketSpacing": true,
+        "arrowParentheses": "always"
+      }
+    },
+    "json": {
+      "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 2
+      }
+    },
+    "css": {
+      "formatter": {
+        "enabled": true,
+        "indentStyle": "space",
+        "indentWidth": 2,
+        "lineWidth": 100
+      }
+    } 
   }
-}
 `}
 </CodeBlock>
 
@@ -273,7 +285,7 @@ Biome will lint and format the codebase according to our rules. In this case, it
 ℹ Unsafe fix: Add the node: protocol.
 
 1 │ - import path from "path";
-  │ + import path from "node:path";
+    │ + import path from "node:path";
 2 │
 3 │ export default ({ env }) => {
 `}
