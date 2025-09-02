@@ -43,9 +43,8 @@ jobs:
         id: changesets
         uses: changesets/action@v1
         with:
-          version: cd site && pnpm version
+          version: pnpm version
           commit: "chore: version packages"
-          title: "chore: version packages"
           cwd: ./site
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
