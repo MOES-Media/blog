@@ -1,5 +1,11 @@
 # @moes-media/blog
 
+## 0.1.4
+
+### Patch Changes
+
+- 6ea4c7d: fixed blog articles basepath error
+
 ## 0.1.3
 
 ### Patch Changes
